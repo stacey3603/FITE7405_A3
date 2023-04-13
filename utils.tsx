@@ -110,12 +110,64 @@ export function btAmerican(
 
   return `American ${optionType} option price calculated by Binomial Tree model [S(0)=${S}, σ=${sigma}, r=${r}, T=${T}, K=${K}], steps=${steps}. Price is:${lastStepsValue[0]} `;
 }
-export function bsModel(S: number, sigma: number, r: number, q: number, T: number, K: number, optionType: OptionType): string {
-    const d1 = (Math.log(S / K) + (r - q) * (T)) / (sigma * Math.sqrt(T)) + (sigma / 2) * Math.sqrt(T)
-    const d2 = d1 - sigma * Math.sqrt(T)
-    const callPrice = S * Math.exp(-q * T) * cdfNormal(d1) - K * Math.exp(-r * (T)) * cdfNormal(d2)
-    const putPrice = K * Math.exp(-r * (T)) * cdfNormal(-d2) - S * Math.exp(-q * T) * cdfNormal(-d1)
-    return `${optionType} Option [S(0)=${S}, σ=${sigma}, r=${r}, q=${q}, T=${T}, K=${K}] Price:${optionType === OptionType.CALL ? callPrice : putPrice}`
+
+export function geometricAsian(
+  S: number,
+  sigma: number,
+  r: number,
+  T: number,
+  K: number,
+  n: number,
+  optionType: OptionType
+): string {
+  const sigmaHat = sigma * Math.sqrt(((n + 1) * (2 * n + 1)) / ((6 * n) ^ 2));
+  const uHat =
+    (((r - (1 / 2) * sigma) ^ 2) * ((n + 1) / (2 * n)) + (1 / 2) * sigmaHat) ^
+    2;
+  const d1Hat =
+    (Math.log(S / K) + ((uHat + (1 / 2) * sigmaHat) ^ 2) * T) /
+    (sigmaHat * Math.sqrt(T));
+  const d2Hat = d1Hat - sigmaHat * Math.sqrt(T);
+  const callPrice =
+    Math.exp(-r * T) *
+    (S * Math.exp(uHat * T) * cdfNormal(d1Hat) - K * cdfNormal(d2Hat));
+  const putPrice =
+    Math.exp(-r * T) *
+    (K * cdfNormal(-d2Hat) - S * Math.exp(uHat * T) * cdfNormal(-d1Hat));
+
+  return `Geometric Asian ${optionType} option [S(0)=${S}, σ=${sigma}, r=${r}, T=${T}, K=${K}], observations=${n}. Price is: ${
+    optionType === OptionType.CALL ? callPrice : putPrice
+  } `;
 }
 
+export function geometricBasket(
+  S1: number,
+  S2: number,
+  sigma1: number,
+  sigma2: number,
+  correlation: number,
+  r: number,
+  T: number,
+  K: number,
+  optionType: OptionType
+): string {
+  const sigmaHat = Math.sqrt(sigma1 * sigma2 * correlation);
+  const uHat =
+    ((r - ((1 / 2) * (sigma1 ^ (2 + sigma2) ^ 2)) / 2) * (1 / 2) * sigmaHat) ^
+    2;
+  const bag0 = Math.sqrt(S1 * S2);
+  const d1Hat =
+    (Math.log(bag0 / K) + ((uHat + (1 / 2) * sigmaHat) ^ 2) * T) /
+    (sigmaHat * Math.sqrt(T));
+  const d2Hat = d1Hat - sigmaHat * Math.sqrt(T);
+  const callPrice =
+    Math.exp(-r * T) *
+    (bag0 * Math.exp(uHat * T) * cdfNormal(d1Hat) - K * cdfNormal(d2Hat));
+  const putPrice =
+    Math.exp(-r * T) *
+    (K * cdfNormal(-d2Hat) - bag0 * Math.exp(uHat * T) * cdfNormal(-d1Hat));
 
+  return `Geometric Basket ${optionType} option [S1(0)=${S1}, S2(0)=${S2}, σ1=${sigma1}, σ2=${sigma2}, r=${r}, T=${T}, K=${K}]. Price is: ${
+    optionType === OptionType.CALL ? callPrice : putPrice
+  } `;
+}
