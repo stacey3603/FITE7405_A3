@@ -2,7 +2,7 @@ import { NextPage } from "next";
 import OptionSelector, { OptionType } from "../components/optionTypeSelector";
 import { useState } from "react";
 import InputBox from "../components/inputBox";
-import { geometricAsian } from "../utils";
+import { printGeometricAsian } from "../utils";
 import OutputBox from "../components/outputBox";
 const AmericanOption: NextPage = () => {
   const [selectedType, setSelectedType] = useState<OptionType | undefined>();
@@ -29,7 +29,7 @@ const AmericanOption: NextPage = () => {
         const T = +parseOption[3];
         const K = +parseOption[4];
         const observations = +parseOption[5];
-        const price = geometricAsian(
+        const price = printGeometricAsian(
           S,
           sigma,
           r,
