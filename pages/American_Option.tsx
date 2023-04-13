@@ -2,9 +2,9 @@ import { NextPage } from "next";
 import OptionSelector, { OptionType } from "../components/optionTypeSelector";
 import { useState } from "react";
 import InputBox from "../components/inputBox";
-import { printBsModel } from "../utils";
+import { btAmerican } from "../utils";
 import OutputBox from "../components/outputBox";
-const EuropeanOption: NextPage = () => {
+const AmericanOption: NextPage = () => {
   const [selectedType, setSelectedType] = useState<OptionType | undefined>();
   const [inputValue, setInputValue] = useState<string>("");
   const [output, SetOutput] = useState<string[]>([]);
@@ -26,10 +26,10 @@ const EuropeanOption: NextPage = () => {
         const S = +parseOption[0];
         const sigma = +parseOption[1];
         const r = +parseOption[2];
-        const q = +parseOption[3];
-        const T = +parseOption[4];
-        const K = +parseOption[5];
-        const price = printBsModel(S, sigma, r, q, T, K, selectedType);
+        const T = +parseOption[3];
+        const K = +parseOption[4];
+        const steps = +parseOption[5];
+        const price = btAmerican(S, sigma, r, T, K, steps, selectedType);
         output.push(price);
       });
       SetOutput(output);
@@ -38,7 +38,7 @@ const EuropeanOption: NextPage = () => {
   return (
     <div className="w-screen h-screen bg-blue-900 flex flex-wrap justify-center content-start">
       <div className="w-full h-[60px] inline-flex text-center mt-10 justify-center">
-        <h1 className="w-1/3 text-3xl uppercase">European Option Pricer</h1>
+        <h1 className="w-1/3 text-3xl uppercase">American Option Pricer</h1>
       </div>
       <div className="w-full inline-flex  mt-10 shadow-md mx-10 grid grid-cols-2 gap-4">
         <div className="p-[5%] bg-black/20">
@@ -50,7 +50,7 @@ const EuropeanOption: NextPage = () => {
         </div>
         <div className="p-[5%] bg-black/20">
           <InputBox
-            dataDescription="[S(0), σ, r, q, T, K]"
+            dataDescription="[S(0), σ, r, T, K, steps]"
             inputValue={inputValue}
             onInputChange={handleInputChange}
           />
@@ -64,4 +64,4 @@ const EuropeanOption: NextPage = () => {
   );
 };
 
-export default EuropeanOption;
+export default AmericanOption;
