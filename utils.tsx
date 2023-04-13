@@ -39,7 +39,32 @@ export function printBsModel(
   return `European ${optionType} Option [S(0)=${S}, σ=${sigma}, r=${r}, q=${q}, T=${T}, K=${K}] Price is:${price}`;
 }
 
-const mathjs = require('mathjs')
+export function impliedVolatility(
+  S: number,
+  r: number,
+  q: number,
+  T: number,
+  K: number,
+  premium: number,
+  optionType: OptionType
+): string {
+  const optionTrue = premium;
+  let sigma = Math.sqrt(2 * Math.abs((Math.log(S / K) + r * T) / T));
+  let sigmaDiff = 1;
+  const nMax = 100;
+  const tol = 1 / 100000000;
+  console.log(tol, "tol");
+  for (let n = 1; n < nMax; n++) {
+    if (sigmaDiff < tol) break;
+    const optionPrice = bsModel(S, sigma, r, q, T, K, optionType);
+    const optionVega = mathjs.derivative(optionPrice, sigma);
+    const increment = (optionPrice - optionTrue) / optionVega;
+    sigma = sigma - increment;
+    sigmaDiff = Math.abs(increment);
+  }
+
+  return `${optionType} Option [S(0)=${S}, σ=${sigma}, r=${r}, q=${q}, T=${T}, K=${K}] Implied Volatility:${sigma}`;
+}
 
 export function btAmerican(
   S: number,
