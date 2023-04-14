@@ -5,6 +5,10 @@ import InputBox from "../components/inputBox";
 import { monteCarloAsian } from "../utils";
 import OutputBox from "../components/outputBox";
 import ControlSelector, { ControlType } from "../components/controlSelector";
+
+const testCase =
+  "[100, 0.3, 0.05, 3, 100, 50, 100];[100, 0.3, 0.05, 3, 100, 100, 100];[100, 0.4, 0.05, 3, 100, 50, 100]";
+
 const ArithAsian: NextPage = () => {
   const [selectedType, setSelectedType] = useState<OptionType | undefined>();
   const [control, setControl] = useState<ControlType | undefined>(undefined);
@@ -85,10 +89,19 @@ const ArithAsian: NextPage = () => {
         </div>
       </div>
       <button
-        className="w-content mt-8 p-4 flex justify-center items-center bg-white text-black"
+        className="w-content mt-8 p-4 mr-4 flex justify-center items-center bg-white text-black"
         onClick={calOutput}
       >
-        <p className="w-full"> Run Calculation</p>
+        <p className="w-full">Run Calculation</p>
+      </button>
+      <button
+        className="w-content mt-8 p-4 ml-4 flex justify-center items-center bg-white text-black"
+        onClick={() => {
+          setInputValue(testCase);
+          calOutput();
+        }}
+      >
+        <p className="w-full">Run Test Cases</p>
       </button>
       <div className="w-full h-[400px] flex justfy-center">
         <OutputBox output={output} />

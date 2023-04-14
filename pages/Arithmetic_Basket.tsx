@@ -5,6 +5,9 @@ import InputBox from "../components/inputBox";
 import { monteCarloBasket } from "../utils";
 import OutputBox from "../components/outputBox";
 import ControlSelector, { ControlType } from "../components/controlSelector";
+
+const testCase =
+  "[100, 100, 0.3, 0.3, 0.5, 0.05, 3, 100, 100];[100, 100, 0.3, 0.3, 0.9, 0.05, 3, 100, 100];[100, 100, 0.1, 0.3, 0.5, 0.05, 3, 100, 100];[100, 100, 0.3, 0.3, 0.5, 0.05, 3, 80, 100];[100, 100, 0.3, 0.3, 0.5, 0.05, 3, 120, 100];[100, 100, 0.5, 0.5, 0.5, 0.05, 3, 100, 100]";
 const ArithBasket: NextPage = () => {
   const [selectedType, setSelectedType] = useState<OptionType | undefined>();
   const [control, setControl] = useState<ControlType | undefined>(undefined);
@@ -82,17 +85,26 @@ const ArithBasket: NextPage = () => {
         </div>
         <div className="p-[5%] bg-black/20">
           <InputBox
-            dataDescription="[S1(0), S2(0), σ1, σ2 ,correlation, r, T, K, Paths]"
+            dataDescription="[S1(0), S2(0), σ1, σ2, correlation, r, T, K, Paths]"
             inputValue={inputValue}
             onInputChange={handleInputChange}
           />
         </div>
       </div>
       <button
-        className="w-content mt-8 p-4 flex justify-center items-center bg-white text-black"
+        className="w-content mt-8 p-4 mr-4 flex justify-center items-center bg-white text-black"
         onClick={calOutput}
       >
-        <p className="w-full"> Run Calculation</p>
+        <p className="w-full">Run Calculation</p>
+      </button>
+      <button
+        className="w-content mt-8 p-4 ml-4 flex justify-center items-center bg-white text-black"
+        onClick={() => {
+          setInputValue(testCase);
+          calOutput();
+        }}
+      >
+        <p className="w-full">Run Test Cases</p>
       </button>
       <div className="w-full h-[400px] flex justfy-center">
         <OutputBox output={output} />
