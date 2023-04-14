@@ -262,9 +262,9 @@ export function monteCarloAsian(
 
       const { interalPayoffs } = calObservationPayoff();
       const arithMean = mean(interalPayoffs);
-      const geoMean =
-        Math.exp(1 / n) *
-        mathjs.sum(interalPayoffs.map((payoff) => mathjs.log(payoff)));
+      const geoMean = Math.exp(
+        (1 / n) * mathjs.sum(interalPayoffs.map((payoff) => mathjs.log(payoff)))
+      );
       const arithSpathiPayoff =
         Math.exp(-r * T) *
         (optionType === OptionType.CALL
@@ -298,6 +298,7 @@ export function monteCarloAsian(
       K=${K}
       n=${n}
       optionType=${optionType}
+      paths=${paths}
     ] without control [${
       arithPayoff - (1.96 * mathjs.std(arithPathPayoffArray)) / Math.sqrt(paths)
     },${
@@ -307,7 +308,7 @@ export function monteCarloAsian(
   const geo = geometricAsian(S, sigma, r, T, K, n, optionType);
 
   const cov =
-    mean(arithPathPayoffArray.map((v, i) => v * geoPathPayoffArray[i])) / 2 -
+    mean(arithPathPayoffArray.map((v, i) => v * geoPathPayoffArray[i])) -
     arithPayoff * geoPayoff;
   const theta = cov / mathjs.variance(geoPathPayoffArray);
   const z = arithPathPayoffArray.map(
@@ -323,6 +324,7 @@ export function monteCarloAsian(
     K=${K}
     n=${n}
     optionType=${optionType}
+    paths=${paths}
   ] with control[${zMean - (1.96 * zStd) / Math.sqrt(paths)},${
     zMean + (1.96 * zStd) / Math.sqrt(paths)
   }]`;
@@ -362,7 +364,7 @@ export function monteCarloBasket(
         );
       interalPayoffs.push(s2);
       const arithMean = mean(interalPayoffs);
-      const geoMean = Math.exp(1 / 2) * (mathjs.log(s1) + mathjs.log(s2));
+      const geoMean = Math.exp(0.5 * (mathjs.log(s1) + mathjs.log(s2)));
       const arithSpathiPayoff =
         Math.exp(-r * T) *
         (optionType === OptionType.CALL
@@ -396,7 +398,9 @@ export function monteCarloBasket(
       r=${r},
       T=${T},
       K=${K},
-      optionType=${optionType}] without control:[${
+      optionType=${optionType}
+      paths=${paths}
+    ] without control:[${
       arithPayoff - (1.96 * mathjs.std(arithPathPayoffArray)) / Math.sqrt(paths)
     },${
       arithPayoff + (1.96 * mathjs.std(arithPathPayoffArray)) / Math.sqrt(paths)
@@ -415,8 +419,9 @@ export function monteCarloBasket(
   );
 
   const cov =
-    mean(arithPathPayoffArray.map((v, i) => v * geoPathPayoffArray[i])) / 2 -
+    mean(arithPathPayoffArray.map((v, i) => v * geoPathPayoffArray[i])) -
     arithPayoff * geoPayoff;
+
   const theta = cov / mathjs.variance(geoPathPayoffArray);
   const z = arithPathPayoffArray.map(
     (v, i) => v + theta * (geo - geoPathPayoffArray[i])
@@ -432,9 +437,10 @@ export function monteCarloBasket(
     r=${r},
     T=${T},
     K=${K},
-    optionType=${optionType}] with control:[${
-    zMean - (1.96 * zStd) / Math.sqrt(paths)
-  },${zMean + (1.96 * zStd) / Math.sqrt(paths)}]`;
+    optionType=${optionType}
+    paths=${paths}] with control:[${zMean - (1.96 * zStd) / Math.sqrt(paths)},${
+    zMean + (1.96 * zStd) / Math.sqrt(paths)
+  }]`;
 }
 
 export function kikoQMC(
