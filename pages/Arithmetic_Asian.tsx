@@ -25,7 +25,6 @@ const ArithAsian: NextPage = () => {
     if (selectedType === undefined) {
       SetOutput(["Please select a option type first"]);
       setLoading(false);
-
       return;
     }
     if (optionsArray.length === 0) {
