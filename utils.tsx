@@ -1,4 +1,6 @@
 const mathjs = require("mathjs");
+const lobos = require("lobos");
+const gaussian = require("gaussian");
 
 import { OptionType } from "./components/optionTypeSelector";
 
@@ -375,4 +377,43 @@ export function monteCarloBasket(
   return `[${zMean - (1.96 * zStd) / Math.sqrt(paths)},${
     zMean + (1.96 * zStd) / Math.sqrt(paths)
   }]`;
+}
+
+export function kikoQMC(
+  S: number,
+  sigma: number,
+  r: number,
+  T: number,
+  K: number,
+  L: number,
+  U: number,
+  observations: number,
+  rebate: number
+): string {
+  const options = { params: "new-joe-kuo-6.21201", resolution: 32 };
+  const factor = S * Math.exp(((r - 0.5 * sigma) ^ 2) * T);
+  const std = sigma * Math.sqrt(T);
+  const distribution = gaussian(0, 1);
+  let qmcPayoffArray: number[] = [];
+  const sequence = new lobos.Sobol(1, options);
+  const x: number[] = sequence.take(observations);
+  const z = x.map((x) => distribution.ppf(x));
+  const factorArray = z.map((z) => z * std);
+  const sArray = factorArray.map((f) => factor * Math.exp(f));
+
+  sArray.map((s) => {
+    let payoff;
+    if (s <= L) {
+      payoff = Math.max(K - s, 0);
+    } else {
+      if (s > U) {
+        payoff = rebate;
+      } else {
+        payoff = 0;
+      }
+    }
+    qmcPayoffArray.push(payoff);
+  });
+  const aM = mean(qmcPayoffArray) * Math.exp(-r * T);
+  return `KIKO put option [S(0)=${S}, σ=${sigma},  r=${r}, T=${T}, K=${K}, L=${L}, U=${U}, observations=${observations}, rebate=${rebate}]. Price is: ${aM} `;
 }
