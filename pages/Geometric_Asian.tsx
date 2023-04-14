@@ -4,7 +4,7 @@ import { useState } from "react";
 import InputBox from "../components/inputBox";
 import { printGeometricAsian } from "../utils";
 import OutputBox from "../components/outputBox";
-const AmericanOption: NextPage = () => {
+const GeoAsian: NextPage = () => {
   const [selectedType, setSelectedType] = useState<OptionType | undefined>();
   const [inputValue, setInputValue] = useState<string>("");
   const [output, SetOutput] = useState<string[]>([]);
@@ -72,4 +72,4 @@ const AmericanOption: NextPage = () => {
   );
 };
 
-export default AmericanOption;
+export default GeoAsian;

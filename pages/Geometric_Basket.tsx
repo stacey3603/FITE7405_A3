@@ -2,9 +2,9 @@ import { NextPage } from "next";
 import OptionSelector, { OptionType } from "../components/optionTypeSelector";
 import { useState } from "react";
 import InputBox from "../components/inputBox";
-import { geometricBasket, printGeometricBasket } from "../utils";
+import { printGeometricBasket } from "../utils";
 import OutputBox from "../components/outputBox";
-const AmericanOption: NextPage = () => {
+const GeoBasket: NextPage = () => {
   const [selectedType, setSelectedType] = useState<OptionType | undefined>();
   const [inputValue, setInputValue] = useState<string>("");
   const [output, SetOutput] = useState<string[]>([]);
@@ -77,4 +77,4 @@ const AmericanOption: NextPage = () => {
   );
 };
 
-export default AmericanOption;
+export default GeoBasket;
