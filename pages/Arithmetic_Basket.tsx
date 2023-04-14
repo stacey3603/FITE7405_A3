@@ -88,9 +88,12 @@ const ArithBasket: NextPage = () => {
           />
         </div>
       </div>
-      <div className=" w-content mt-8 p-4" onClick={calOutput}>
-        Run Calculation
-      </div>
+      <button
+        className="w-content mt-8 p-4 flex justify-center items-center bg-white text-black"
+        onClick={calOutput}
+      >
+        <p className="w-full"> Run Calculation</p>
+      </button>
       <div className="w-full h-[400px] flex justfy-center">
         <OutputBox output={output} />
       </div>

@@ -13,12 +13,11 @@ export default function InputBox(props: Iprops) {
         Please seperated with &quot; ; &quot; if you want to calculate multiple
         options
       </p>
-      <input
-        type="text"
+      <textarea
         className="w-full bg-white h-[200px] mt-2 text-black justify-start content-start text-start"
         value={props.inputValue}
         onChange={props.onInputChange}
-      ></input>
+      ></textarea>
     </div>
   );
 }

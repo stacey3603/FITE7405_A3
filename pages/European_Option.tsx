@@ -56,9 +56,12 @@ const EuropeanOption: NextPage = () => {
           />
         </div>
       </div>
-      <div className=" w-content mt-8 p-4" onClick={calOutput}>
-        Run Calculation
-      </div>
+      <button
+        className="w-content mt-8 p-4 flex justify-center items-center bg-white text-black"
+        onClick={calOutput}
+      >
+        <p className="w-full"> Run Calculation</p>
+      </button>
       <OutputBox output={output} />
     </div>
   );
