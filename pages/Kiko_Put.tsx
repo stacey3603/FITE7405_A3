@@ -37,7 +37,7 @@ const KikoQmc: NextPage = () => {
     SetOutput(output);
   };
   return (
-    <div className="w-screen min-h-max h-full bg-blue-900 flex flex-wrap justify-center content-start">
+    <div className="w-screen min-h-max h-full flex flex-wrap justify-center content-start">
       <div className="w-full h-[60px] inline-flex text-center mt-10 justify-center">
         <h1 className="w-1/2 text-3xl uppercase">
           Kiko Put Option Pricer (in Quasi-Monte Carlo)

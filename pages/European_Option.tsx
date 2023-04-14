@@ -36,7 +36,7 @@ const EuropeanOption: NextPage = () => {
     }
   };
   return (
-    <div className="w-screen h-screen bg-blue-900 flex flex-wrap justify-center content-start">
+    <div className="w-screen h-screen flex flex-wrap justify-center content-start">
       <div className="w-full h-[60px] inline-flex text-center mt-10 justify-center">
         <h1 className="w-1/3 text-3xl uppercase">European Option Pricer</h1>
       </div>
