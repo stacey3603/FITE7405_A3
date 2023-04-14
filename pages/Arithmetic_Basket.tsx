@@ -1,6 +1,6 @@
 import { NextPage } from "next";
 import OptionSelector, { OptionType } from "../components/optionTypeSelector";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import InputBox from "../components/inputBox";
 import { monteCarloBasket } from "../utils";
 import OutputBox from "../components/outputBox";
@@ -19,19 +19,16 @@ const ArithBasket: NextPage = () => {
     setInputValue(event.target.value);
   };
 
-  const calOutput = (inputValue: string) => {
-    setLoading(true);
+  const calOutput = async (inputValue: string) => {
     const optionsArray = inputValue.split(";");
     if (selectedType === undefined) {
       SetOutput(["Please select a option type first"]);
       setLoading(false);
-
       return;
     }
-    if (optionsArray.length === 0) {
+    if (optionsArray.length === 1) {
       SetOutput(["Please input option data"]);
       setLoading(false);
-
       return;
     }
     if (control === undefined) {
@@ -39,37 +36,39 @@ const ArithBasket: NextPage = () => {
       setLoading(false);
       return;
     }
-
-    const output: string[] = [];
-    optionsArray.map((option) => {
-      const parseOption = option.slice(1, option.length - 1).split(",");
-      const S1 = +parseOption[0];
-      const S2 = +parseOption[1];
-      const sigma1 = +parseOption[2];
-      const sigma2 = +parseOption[3];
-      const correlation = +parseOption[4];
-      const r = +parseOption[5];
-      const T = +parseOption[6];
-      const K = +parseOption[7];
-      const path = +parseOption[8];
-
-      const price = monteCarloBasket(
-        S1,
-        S2,
-        sigma1,
-        sigma2,
-        correlation,
-        r,
-        T,
-        K,
-        selectedType,
-        path,
-        control === ControlType.True ? true : false
-      );
-      output.push(price);
-    });
+    const waitOutput = async () => {
+      const output: string[] = [];
+      for (let i = 0; i < optionsArray.length; i++) {
+        const option = optionsArray[i];
+        const parseOption = option.slice(1, option.length - 1).split(",");
+        const S1 = +parseOption[0];
+        const S2 = +parseOption[1];
+        const sigma1 = +parseOption[2];
+        const sigma2 = +parseOption[3];
+        const correlation = +parseOption[4];
+        const r = +parseOption[5];
+        const T = +parseOption[6];
+        const K = +parseOption[7];
+        const path = +parseOption[8];
+        const price = monteCarloBasket(
+          S1,
+          S2,
+          sigma1,
+          sigma2,
+          correlation,
+          r,
+          T,
+          K,
+          selectedType,
+          path,
+          control === ControlType.True ? true : false
+        );
+        output.push(price);
+      }
+      return Promise.resolve(output);
+    };
+    const output = await waitOutput();
     SetOutput(output);
-    setLoading(false);
   };
 
   return (
@@ -108,8 +107,10 @@ const ArithBasket: NextPage = () => {
       </button>
       <button
         className="w-content mt-8 p-4 ml-4 flex justify-center items-center bg-white text-black"
-        onClick={() => {
-          calOutput(testCase);
+        onClick={async () => {
+          setLoading(true);
+          await calOutput(testCase);
+          setLoading(false);
         }}
       >
         <p className="w-full">Run Test Cases</p>

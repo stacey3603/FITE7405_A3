@@ -16,7 +16,7 @@ const KikoQmc: NextPage = () => {
     setLoading(true);
 
     const optionsArray = inputValue.split(";");
-    if (optionsArray.length === 0) {
+    if (optionsArray.length === 1) {
       SetOutput(["Please input option data"]);
       return;
     }

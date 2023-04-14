@@ -17,7 +17,7 @@ const EuropeanOption: NextPage = () => {
     const optionsArray = inputValue.split(";");
     if (selectedType === undefined) {
       SetOutput(["Please select a option type first"]);
-    } else if (optionsArray.length === 0) {
+    } else if (optionsArray.length === 1) {
       SetOutput(["Please input option data"]);
     } else {
       const output: string[] = [];

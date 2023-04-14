@@ -19,15 +19,14 @@ const ArithAsian: NextPage = () => {
     setInputValue(event.target.value);
   };
 
-  const calOutput = (inputValue: string) => {
-    setLoading(true);
+  const calOutput = async (inputValue: string) => {
     const optionsArray = inputValue.split(";");
     if (selectedType === undefined) {
       SetOutput(["Please select a option type first"]);
       setLoading(false);
       return;
     }
-    if (optionsArray.length === 0) {
+    if (optionsArray.length === 1) {
       SetOutput(["Please input option data"]);
       setLoading(false);
       return;
@@ -37,34 +36,37 @@ const ArithAsian: NextPage = () => {
       setLoading(false);
       return;
     }
+    const waitOutput = async () => {
+      const output: string[] = [];
+      optionsArray.map((option) => {
+        const parseOption = option.slice(1, option.length - 1).split(",");
+        const S = +parseOption[0];
+        const sigma = +parseOption[1];
+        const r = +parseOption[2];
+        const T = +parseOption[3];
+        const K = +parseOption[4];
+        const observations = +parseOption[5];
+        const path = +parseOption[6];
 
-    const output: string[] = [];
-    optionsArray.map((option) => {
-      const parseOption = option.slice(1, option.length - 1).split(",");
-      const S = +parseOption[0];
-      const sigma = +parseOption[1];
-      const r = +parseOption[2];
-      const T = +parseOption[3];
-      const K = +parseOption[4];
-      const observations = +parseOption[5];
-      const path = +parseOption[6];
-
-      const price = monteCarloAsian(
-        S,
-        sigma,
-        r,
-        T,
-        K,
-        observations,
-        selectedType,
-        path,
-        control === ControlType.True ? true : false
-      );
-      output.push(price);
-    });
+        const price = monteCarloAsian(
+          S,
+          sigma,
+          r,
+          T,
+          K,
+          observations,
+          selectedType,
+          path,
+          control === ControlType.True ? true : false
+        );
+        output.push(price);
+      });
+      return Promise.resolve(output);
+    };
+    const output = await waitOutput();
     SetOutput(output);
-    setLoading(false);
   };
+
   return (
     <div className="w-screen min-h-max h-full flex flex-wrap justify-center content-start">
       <div className="w-full h-[60px] inline-flex text-center mt-10 justify-center">
@@ -101,8 +103,10 @@ const ArithAsian: NextPage = () => {
       </button>
       <button
         className="w-content mt-8 p-4 ml-4 flex justify-center items-center bg-white text-black"
-        onClick={() => {
-          calOutput(testCase);
+        onClick={async () => {
+          setLoading(true);
+          await calOutput(testCase);
+          setLoading(false);
         }}
       >
         <p className="w-full">Run Test Cases</p>

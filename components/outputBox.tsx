@@ -11,8 +11,8 @@ export default function OutputBox(props: Iprops) {
       }`}
     >
       {props.loading ? (
-        <div className="w-full h-full justify-center content-center">
-          "Loading..."
+        <div className="w-full h-full flex justify-center content-center">
+          Loading...
         </div>
       ) : (
         props.output.map((data) => {
