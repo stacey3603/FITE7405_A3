@@ -14,23 +14,28 @@ const ArithAsian: NextPage = () => {
   const [control, setControl] = useState<ControlType | undefined>(undefined);
   const [inputValue, setInputValue] = useState<string>("");
   const [output, SetOutput] = useState<string[]>([]);
-
+  const [loading, setLoading] = useState<boolean>(false);
   const handleInputChange = (event: any) => {
     setInputValue(event.target.value);
   };
 
-  const calOutput = () => {
+  const calOutput = (inputValue: string) => {
+    setLoading(true);
     const optionsArray = inputValue.split(";");
     if (selectedType === undefined) {
       SetOutput(["Please select a option type first"]);
+      setLoading(false);
+
       return;
     }
     if (optionsArray.length === 0) {
       SetOutput(["Please input option data"]);
+      setLoading(false);
       return;
     }
     if (control === undefined) {
       SetOutput(["Please select a control type first"]);
+      setLoading(false);
       return;
     }
 
@@ -59,6 +64,7 @@ const ArithAsian: NextPage = () => {
       output.push(price);
     });
     SetOutput(output);
+    setLoading(false);
   };
   return (
     <div className="w-screen min-h-max h-full flex flex-wrap justify-center content-start">
@@ -90,21 +96,20 @@ const ArithAsian: NextPage = () => {
       </div>
       <button
         className="w-content mt-8 p-4 mr-4 flex justify-center items-center bg-white text-black"
-        onClick={calOutput}
+        onClick={() => calOutput(inputValue)}
       >
         <p className="w-full">Run Calculation</p>
       </button>
       <button
         className="w-content mt-8 p-4 ml-4 flex justify-center items-center bg-white text-black"
         onClick={() => {
-          setInputValue(testCase);
-          calOutput();
+          calOutput(testCase);
         }}
       >
         <p className="w-full">Run Test Cases</p>
       </button>
       <div className="w-full h-[400px] flex justfy-center">
-        <OutputBox output={output} />
+        <OutputBox output={output} loading={loading} />
       </div>
     </div>
   );

@@ -70,7 +70,7 @@ const GeoAsian: NextPage = () => {
       >
         <p className="w-full"> Run Calculation</p>
       </button>
-      <OutputBox output={output} />
+      <OutputBox output={output} loading={false} />
     </div>
   );
 };
