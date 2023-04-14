@@ -98,7 +98,7 @@ export function btAmerican(
   let lastStepsValue: number[] = [];
 
   for (let i = 0; i <= steps; i++) {
-    const stockPrice = (S * d) ^ ((steps - i) * u) ^ i;
+    const stockPrice = S * Math.pow(d, steps - i) * Math.pow(u, i);
     const value =
       optionType === OptionType.CALL
         ? Math.max(0, stockPrice - K)
@@ -134,12 +134,13 @@ export function geometricAsian(
   n: number,
   optionType: OptionType
 ): number {
-  const sigmaHat = sigma * Math.sqrt(((n + 1) * (2 * n + 1)) / ((6 * n) ^ 2));
+  const sigmaHat =
+    sigma * Math.sqrt(((n + 1) * (2 * n + 1)) / Math.pow(6 * n, 2));
   const uHat =
-    (((r - (1 / 2) * sigma) ^ 2) * ((n + 1) / (2 * n)) + (1 / 2) * sigmaHat) ^
-    2;
+    (r - (1 / 2) * Math.pow(sigma, 2)) * ((n + 1) / (2 * n)) +
+    (1 / 2) * Math.pow(sigmaHat, 2);
   const d1Hat =
-    (Math.log(S / K) + ((uHat + (1 / 2) * sigmaHat) ^ 2) * T) /
+    (Math.log(S / K) + (uHat + (1 / 2) * Math.pow(sigmaHat, 2)) * T) /
     (sigmaHat * Math.sqrt(T));
   const d2Hat = d1Hat - sigmaHat * Math.sqrt(T);
   const callPrice =
@@ -163,13 +164,14 @@ export function geometricBasket(
   K: number,
   optionType: OptionType
 ): number {
-  const sigmaHat = Math.sqrt(sigma1 * sigma2 * correlation);
+  const sigmaHat = Math.sqrt(sigma1 * sigma2 * correlation) / 2;
   const uHat =
-    ((r - ((1 / 2) * (sigma1 ^ (2 + sigma2) ^ 2)) / 2) * (1 / 2) * sigmaHat) ^
-    2;
+    r -
+    (1 / 4) * (Math.pow(sigma1, 2) + Math.pow(sigma2, 2)) +
+    (1 / 2) * Math.pow(sigmaHat, 2);
   const bag0 = Math.sqrt(S1 * S2);
   const d1Hat =
-    (Math.log(bag0 / K) + ((uHat + (1 / 2) * sigmaHat) ^ 2) * T) /
+    (Math.log(bag0 / K) + (uHat + (1 / 2) * Math.pow(sigmaHat, 2)) * T) /
     (sigmaHat * Math.sqrt(T));
   const d2Hat = d1Hat - sigmaHat * Math.sqrt(T);
   const callPrice =
@@ -232,47 +234,71 @@ export function monteCarloAsian(
   control: boolean
 ) {
   const Dt = T / n;
-  const drift = Math.exp(((r - 0.5 * sigma) ^ 2) * Dt);
-  let arithPathPayoffArray = [];
-  let geoPathPayoffArray: number[] = [];
+  const drift = Math.exp((r - 0.5 * Math.pow(sigma, 2)) * Dt);
 
-  for (let i = 1; i <= paths; i++) {
-    let interalPayoffs: number[] = [];
-    let geoMean: number = 1;
-    const growFactor =
-      drift * Math.exp(sigma * Math.sqrt(Dt) * standardRandom());
-    const s1 = S * growFactor;
-    interalPayoffs.push(s1);
-    geoMean = s1;
-    for (let i = 2; i <= n; i++) {
-      const growFactor =
-        drift * Math.exp(sigma * Math.sqrt(Dt) * standardRandom());
-      const Sn = interalPayoffs[i - 2] * growFactor;
-      interalPayoffs.push(Sn);
-      geoMean = geoMean * Sn;
+  const calPayOff = () => {
+    let arithPathPayoffArray = [];
+    let geoPathPayoffArray: number[] = [];
+
+    for (let i = 1; i <= paths; i++) {
+      const calObservationPayoff = () => {
+        let interalPayoffs: number[] = [];
+        const growFactor = () => {
+          return drift * Math.exp(sigma * Math.sqrt(Dt) * standardRandom());
+        };
+        for (let i = 1; i <= n; i++) {
+          if (i === 1) {
+            const s1 = S * growFactor();
+            interalPayoffs.push(s1);
+          } else {
+            const Sn = interalPayoffs[i - 2] * growFactor();
+            interalPayoffs.push(Sn);
+          }
+        }
+        return {
+          interalPayoffs,
+        };
+      };
+
+      const { interalPayoffs } = calObservationPayoff();
+      const arithMean = mean(interalPayoffs);
+      const geoMean =
+        Math.exp(1 / n) *
+        mathjs.sum(interalPayoffs.map((payoff) => mathjs.log(payoff)));
+      const arithSpathiPayoff =
+        Math.exp(-r * T) *
+        (optionType === OptionType.CALL
+          ? Math.max(arithMean - K, 0)
+          : Math.max(K - arithMean, 0));
+      const geoSpathiPayoff =
+        Math.exp(-r * T) *
+        (optionType === OptionType.CALL
+          ? Math.max(geoMean - K, 0)
+          : Math.max(K - geoMean, 0));
+
+      arithPathPayoffArray.push(arithSpathiPayoff);
+      geoPathPayoffArray.push(geoSpathiPayoff);
     }
-    const arithMean = mean(interalPayoffs);
-    geoMean = geoMean ^ (1 / n);
-    const arithSpathiPayoff =
-      Math.exp(-r * T) *
-      (optionType === OptionType.CALL
-        ? Math.max(arithMean - K, 0)
-        : Math.max(K - arithMean, 0));
-    const geoSpathiPayoff =
-      Math.exp(-r * T) *
-      (optionType === OptionType.CALL
-        ? Math.max(geoMean - K, 0)
-        : Math.max(K - geoMean, 0));
-
-    arithPathPayoffArray.push(arithSpathiPayoff);
-    geoPathPayoffArray.push(geoSpathiPayoff);
-  }
+    return {
+      arithPathPayoffArray,
+      geoPathPayoffArray,
+    };
+  };
+  const { arithPathPayoffArray, geoPathPayoffArray } = calPayOff();
 
   const arithPayoff = mean(arithPathPayoffArray);
   const geoPayoff = mean(geoPathPayoffArray);
 
   if (!control)
-    return `[${
+    return `Asian [
+      S=${S}
+      sigma=${sigma}
+      r=${r}
+      T=${T}
+      K=${K}
+      n=${n}
+      optionType=${optionType}
+    ] without control [${
       arithPayoff - (1.96 * mathjs.std(arithPathPayoffArray)) / Math.sqrt(paths)
     },${
       arithPayoff + (1.96 * mathjs.std(arithPathPayoffArray)) / Math.sqrt(paths)
@@ -289,7 +315,15 @@ export function monteCarloAsian(
   );
   const zMean = mean(z);
   const zStd = mathjs.std(z);
-  return `[${zMean - (1.96 * zStd) / Math.sqrt(paths)},${
+  return `Asian [
+    S=${S}
+    sigma=${sigma}
+    r=${r}
+    T=${T}
+    K=${K}
+    n=${n}
+    optionType=${optionType}
+  ] with control[${zMean - (1.96 * zStd) / Math.sqrt(paths)},${
     zMean + (1.96 * zStd) / Math.sqrt(paths)
   }]`;
 }
@@ -307,47 +341,62 @@ export function monteCarloBasket(
   paths: number,
   control: boolean
 ) {
-  let arithPathPayoffArray = [];
-  let geoPathPayoffArray: number[] = [];
+  const calPayOff = () => {
+    let arithPathPayoffArray = [];
+    let geoPathPayoffArray: number[] = [];
 
-  for (let i = 1; i <= paths; i++) {
-    let interalPayoffs: number[] = [];
-    let geoMean: number = 1;
-    const s1 =
-      S1 *
-      Math.exp(
-        ((r - (1 / 2) * sigma1) ^ 2) * T + sigma1 * T * standardRandom()
-      );
-    interalPayoffs.push(s1);
-    const s2 =
-      S2 *
-      Math.exp(
-        ((r - (1 / 2) * sigma2) ^ 2) * T + sigma2 * T * standardRandom()
-      );
-    interalPayoffs.push(s2);
-    geoMean = s1 * s2;
-    const arithMean = mean(interalPayoffs);
-    geoMean = geoMean ^ (1 / 2);
-    const arithSpathiPayoff =
-      Math.exp(-r * T) *
-      (optionType === OptionType.CALL
-        ? Math.max(arithMean - K, 0)
-        : Math.max(K - arithMean, 0));
-    const geoSpathiPayoff =
-      Math.exp(-r * T) *
-      (optionType === OptionType.CALL
-        ? Math.max(geoMean - K, 0)
-        : Math.max(K - geoMean, 0));
+    for (let i = 1; i <= paths; i++) {
+      let interalPayoffs: number[] = [];
+      const s1 =
+        S1 *
+        Math.exp(
+          (r - (1 / 2) * Math.pow(sigma1, 2)) * T +
+            sigma1 * T * standardRandom()
+        );
+      interalPayoffs.push(s1);
+      const s2 =
+        S2 *
+        Math.exp(
+          (r - (1 / 2) * Math.pow(sigma2, 2)) * T +
+            sigma2 * T * standardRandom()
+        );
+      interalPayoffs.push(s2);
+      const arithMean = mean(interalPayoffs);
+      const geoMean = Math.exp(1 / 2) * (mathjs.log(s1) + mathjs.log(s2));
+      const arithSpathiPayoff =
+        Math.exp(-r * T) *
+        (optionType === OptionType.CALL
+          ? Math.max(arithMean - K, 0)
+          : Math.max(K - arithMean, 0));
+      const geoSpathiPayoff =
+        Math.exp(-r * T) *
+        (optionType === OptionType.CALL
+          ? Math.max(geoMean - K, 0)
+          : Math.max(K - geoMean, 0));
 
-    arithPathPayoffArray.push(arithSpathiPayoff);
-    geoPathPayoffArray.push(geoSpathiPayoff);
-  }
-
+      arithPathPayoffArray.push(arithSpathiPayoff);
+      geoPathPayoffArray.push(geoSpathiPayoff);
+    }
+    return {
+      arithPathPayoffArray,
+      geoPathPayoffArray,
+    };
+  };
+  const { arithPathPayoffArray, geoPathPayoffArray } = calPayOff();
   const arithPayoff = mean(arithPathPayoffArray);
   const geoPayoff = mean(geoPathPayoffArray);
 
   if (!control)
-    return `[${
+    return `Basket [S1=${S1},
+      S2=${S2}
+      S2=${S2},
+      sigma1=${sigma1},
+      sigma2=${sigma2},
+      correlation=${correlation},
+      r=${r},
+      T=${T},
+      K=${K},
+      optionType=${optionType}] without control:[${
       arithPayoff - (1.96 * mathjs.std(arithPathPayoffArray)) / Math.sqrt(paths)
     },${
       arithPayoff + (1.96 * mathjs.std(arithPathPayoffArray)) / Math.sqrt(paths)
@@ -374,9 +423,18 @@ export function monteCarloBasket(
   );
   const zMean = mean(z);
   const zStd = mathjs.std(z);
-  return `[${zMean - (1.96 * zStd) / Math.sqrt(paths)},${
-    zMean + (1.96 * zStd) / Math.sqrt(paths)
-  }]`;
+  return `Basket [S1=${S1},
+    S2=${S2}
+    S2=${S2},
+    sigma1=${sigma1},
+    sigma2=${sigma2},
+    correlation=${correlation},
+    r=${r},
+    T=${T},
+    K=${K},
+    optionType=${optionType}] with control:[${
+    zMean - (1.96 * zStd) / Math.sqrt(paths)
+  },${zMean + (1.96 * zStd) / Math.sqrt(paths)}]`;
 }
 
 export function kikoQMC(
@@ -391,7 +449,7 @@ export function kikoQMC(
   rebate: number
 ): string {
   const options = { params: "new-joe-kuo-6.21201", resolution: 32 };
-  const factor = S * Math.exp(((r - 0.5 * sigma) ^ 2) * T);
+  const factor = S * Math.exp((r - 0.5 * Math.pow(sigma, 2)) * T);
   const std = sigma * Math.sqrt(T);
   const distribution = gaussian(0, 1);
   let qmcPayoffArray: number[] = [];

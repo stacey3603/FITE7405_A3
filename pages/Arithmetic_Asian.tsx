@@ -7,7 +7,7 @@ import OutputBox from "../components/outputBox";
 import ControlSelector, { ControlType } from "../components/controlSelector";
 
 const testCase =
-  "[100, 0.3, 0.05, 3, 100, 50, 100];[100, 0.3, 0.05, 3, 100, 100, 100];[100, 0.4, 0.05, 3, 100, 50, 100]";
+  "[100, 0.3, 0.05, 3, 100, 50, 100000];[100, 0.3, 0.05, 3, 100, 100, 100000];[100, 0.4, 0.05, 3, 100, 50, 100000]";
 
 const ArithAsian: NextPage = () => {
   const [selectedType, setSelectedType] = useState<OptionType | undefined>();

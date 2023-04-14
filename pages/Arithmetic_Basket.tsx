@@ -7,7 +7,7 @@ import OutputBox from "../components/outputBox";
 import ControlSelector, { ControlType } from "../components/controlSelector";
 
 const testCase =
-  "[100, 100, 0.3, 0.3, 0.5, 0.05, 3, 100, 100];[100, 100, 0.3, 0.3, 0.9, 0.05, 3, 100, 100];[100, 100, 0.1, 0.3, 0.5, 0.05, 3, 100, 100];[100, 100, 0.3, 0.3, 0.5, 0.05, 3, 80, 100];[100, 100, 0.3, 0.3, 0.5, 0.05, 3, 120, 100];[100, 100, 0.5, 0.5, 0.5, 0.05, 3, 100, 100]";
+  "[100, 100, 0.3, 0.3, 0.5, 0.05, 3, 100, 100000];[100, 100, 0.3, 0.3, 0.9, 0.05, 3, 100, 100000];[100, 100, 0.1, 0.3, 0.5, 0.05, 3, 100, 100000];[100, 100, 0.3, 0.3, 0.5, 0.05, 3, 80, 100000];[100, 100, 0.3, 0.3, 0.5, 0.05, 3, 120, 100000];[100, 100, 0.5, 0.5, 0.5, 0.05, 3, 100, 100000]";
 const ArithBasket: NextPage = () => {
   const [selectedType, setSelectedType] = useState<OptionType | undefined>();
   const [control, setControl] = useState<ControlType | undefined>(undefined);
