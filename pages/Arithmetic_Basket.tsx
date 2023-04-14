@@ -2,10 +2,10 @@ import { NextPage } from "next";
 import OptionSelector, { OptionType } from "../components/optionTypeSelector";
 import { useState } from "react";
 import InputBox from "../components/inputBox";
-import { monteCarloAsian } from "../utils";
+import { monteCarloBasket } from "../utils";
 import OutputBox from "../components/outputBox";
 import ControlSelector, { ControlType } from "../components/controlSelector";
-const ArithAsian: NextPage = () => {
+const ArithBasket: NextPage = () => {
   const [selectedType, setSelectedType] = useState<OptionType | undefined>();
   const [control, setControl] = useState<ControlType | undefined>(undefined);
   const [inputValue, setInputValue] = useState<string>("");
@@ -33,21 +33,25 @@ const ArithAsian: NextPage = () => {
     const output: string[] = [];
     optionsArray.map((option) => {
       const parseOption = option.slice(1, option.length - 1).split(",");
-      const S = +parseOption[0];
-      const sigma = +parseOption[1];
-      const r = +parseOption[2];
-      const T = +parseOption[3];
-      const K = +parseOption[4];
-      const observations = +parseOption[5];
-      const path = +parseOption[6];
+      const S1 = +parseOption[0];
+      const S2 = +parseOption[1];
+      const sigma1 = +parseOption[2];
+      const sigma2 = +parseOption[3];
+      const correlation = +parseOption[4];
+      const r = +parseOption[5];
+      const T = +parseOption[6];
+      const K = +parseOption[7];
+      const path = +parseOption[8];
 
-      const price = monteCarloAsian(
-        S,
-        sigma,
+      const price = monteCarloBasket(
+        S1,
+        S2,
+        sigma1,
+        sigma2,
+        correlation,
         r,
         T,
         K,
-        observations,
         selectedType,
         path,
         control === ControlType.True ? true : false
@@ -60,7 +64,7 @@ const ArithAsian: NextPage = () => {
     <div className="w-screen min-h-max h-full bg-blue-900 flex flex-wrap justify-center content-start">
       <div className="w-full h-[60px] inline-flex text-center mt-10 justify-center">
         <h1 className="w-1/3 text-3xl uppercase">
-          Arithmetic Asian Pricer(in Monte Carlo)
+          Arithmetic Basket Pricer(in Monte Carlo)
         </h1>
       </div>
       <div className="w-full inline-flex mt-10 shadow-md mx-10 grid grid-cols-2 gap-4">
@@ -78,7 +82,7 @@ const ArithAsian: NextPage = () => {
         </div>
         <div className="p-[5%] bg-black/20">
           <InputBox
-            dataDescription="[S(0), σ, r, T, K, observations, Paths]"
+            dataDescription="[S1(0), S2(0), σ1, σ2 ,correlation, r, T, K, Paths]"
             inputValue={inputValue}
             onInputChange={handleInputChange}
           />
@@ -94,4 +98,4 @@ const ArithAsian: NextPage = () => {
   );
 };
 
-export default ArithAsian;
+export default ArithBasket;
